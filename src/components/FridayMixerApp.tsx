@@ -9,11 +9,14 @@ import {
 } from '@/lib/colors';
 import {
   preloadAssets,
-  renderFrame,
+  renderFrameVariant,
   exportPNG,
+  exportGIF,
   loadImage,
   CANVAS_W,
   CANVAS_H,
+  ANIMATION_SEQUENCE,
+  type FrameVariant,
 } from '@/lib/compositor';
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
@@ -65,11 +68,15 @@ export default function FridayMixerApp() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [assetsError, setAssetsError] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingGif, setIsExportingGif] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevThumbnailRef = useRef<string | null>(null);
+  const animIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const animFrameIndexRef = useRef(0);
 
   // ─── Derived ──────────────────────────────────────────────────────────────
 
@@ -99,17 +106,28 @@ export default function FridayMixerApp() {
       .catch(() => setAssetsError(true));
   }, []);
 
-  // ─── Canvas re-render ─────────────────────────────────────────────────────
+  // ─── Animation cleanup on unmount ─────────────────────────────────────────
 
   useEffect(() => {
-    if (!assetsLoaded || !canvasRef.current) return;
-    renderFrame({
+    return () => {
+      if (animIntervalRef.current) {
+        clearInterval(animIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // ─── Canvas re-render (skipped while animation is playing) ────────────────
+
+  useEffect(() => {
+    if (!assetsLoaded || !canvasRef.current || isAnimating) return;
+    renderFrameVariant({
       canvas: canvasRef.current,
       featureImage,
       textColor: effectiveTextColor,
       frameColor: effectiveFrameColor,
+      variant: 'A',
     });
-  }, [assetsLoaded, featureImage, effectiveTextColor, effectiveFrameColor]);
+  }, [assetsLoaded, featureImage, effectiveTextColor, effectiveFrameColor, isAnimating]);
 
   // ─── Image handling ───────────────────────────────────────────────────────
 
@@ -193,19 +211,82 @@ export default function FridayMixerApp() {
     );
   };
 
-  // ─── Export ───────────────────────────────────────────────────────────────
+  // ─── Export: Still PNG ────────────────────────────────────────────────────
 
   const handleExport = () => {
-    if (!canvasRef.current || !canExport || isExporting) return;
+    if (!canvasRef.current || !canExport || isExporting || isAnimating) return;
     setIsExporting(true);
-    exportPNG(canvasRef.current, issueNumber.trim());
+    exportPNG(
+      canvasRef.current,
+      featureImage,
+      effectiveTextColor,
+      effectiveFrameColor,
+      issueNumber.trim(),
+    );
     setTimeout(() => setIsExporting(false), 500);
   };
 
+  // ─── Preview animation ────────────────────────────────────────────────────
+
+  // Preview runs at 200ms/frame so the cycle is visible; exported GIF uses 10ms.
+  const PREVIEW_INTERVAL_MS = 200;
+
+  const handlePreviewAnimation = useCallback(() => {
+    if (!canvasRef.current) return;
+
+    if (isAnimating) {
+      // Stop: clear the interval and restore A variant
+      if (animIntervalRef.current) {
+        clearInterval(animIntervalRef.current);
+        animIntervalRef.current = null;
+      }
+      setIsAnimating(false);
+      // A-variant re-render is handled by the canvas useEffect reacting to
+      // isAnimating becoming false.
+    } else {
+      // Start animation
+      animFrameIndexRef.current = 0;
+      setIsAnimating(true);
+
+      // Capture current render params for the closure
+      const canvas = canvasRef.current;
+      const image = featureImage;
+      const tColor = effectiveTextColor;
+      const fColor = effectiveFrameColor;
+
+      animIntervalRef.current = setInterval(() => {
+        const variant: FrameVariant =
+          ANIMATION_SEQUENCE[animFrameIndexRef.current % ANIMATION_SEQUENCE.length];
+        renderFrameVariant({
+          canvas,
+          featureImage: image,
+          textColor: tColor,
+          frameColor: fColor,
+          variant,
+        });
+        animFrameIndexRef.current++;
+      }, PREVIEW_INTERVAL_MS);
+    }
+  }, [isAnimating, featureImage, effectiveTextColor, effectiveFrameColor]);
+
+  // ─── Export: Animated GIF ─────────────────────────────────────────────────
+
+  const handleExportGif = useCallback(async () => {
+    if (!canExport || isExportingGif || isAnimating) return;
+    setIsExportingGif(true);
+    try {
+      await exportGIF(
+        { featureImage, textColor: effectiveTextColor, frameColor: effectiveFrameColor },
+        issueNumber.trim(),
+      );
+    } finally {
+      setIsExportingGif(false);
+    }
+  }, [canExport, isExportingGif, isAnimating, featureImage, effectiveTextColor, effectiveFrameColor, issueNumber]);
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
-  const exportFilename =
-    issueValid ? `TheFridayMixer-${issueNumber.trim()}.png` : null;
+  const exportFilename = issueValid ? `TheFridayMixer-${issueNumber.trim()}` : null;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col">
@@ -418,19 +499,50 @@ export default function FridayMixerApp() {
             )}
           </SectionCard>
 
-          {/* Export button */}
+          {/* Export buttons */}
           <div className="space-y-2">
+            {/* Download Still PNG */}
             <button
               onClick={handleExport}
-              disabled={!canExport || isExporting}
+              disabled={!canExport || isExporting || isAnimating}
               className={[
                 'w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all',
-                canExport && !isExporting
+                canExport && !isExporting && !isAnimating
                   ? 'bg-white text-slate-900 hover:bg-slate-100 active:scale-[0.98] shadow-lg shadow-white/10'
                   : 'bg-slate-700 text-slate-500 cursor-not-allowed',
               ].join(' ')}
             >
-              {isExporting ? 'Exporting…' : 'Download PNG'}
+              {isExporting ? 'Exporting…' : 'Download Still PNG'}
+            </button>
+
+            {/* Preview Animation */}
+            <button
+              onClick={handlePreviewAnimation}
+              disabled={!canExport}
+              className={[
+                'w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all',
+                canExport
+                  ? isAnimating
+                    ? 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-[0.98]'
+                    : 'bg-slate-600 text-white hover:bg-slate-500 active:scale-[0.98]'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed',
+              ].join(' ')}
+            >
+              {isAnimating ? 'Stop' : 'Preview Animation'}
+            </button>
+
+            {/* Download Animated GIF */}
+            <button
+              onClick={handleExportGif}
+              disabled={!canExport || isExportingGif || isAnimating}
+              className={[
+                'w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all',
+                canExport && !isExportingGif && !isAnimating
+                  ? 'bg-slate-600 text-white hover:bg-slate-500 active:scale-[0.98]'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed',
+              ].join(' ')}
+            >
+              {isExportingGif ? 'Encoding GIF…' : 'Download Animated GIF'}
             </button>
 
             {!canExport && (
@@ -449,7 +561,7 @@ export default function FridayMixerApp() {
 
             {exportFilename && (
               <p className="text-xs text-slate-500 text-center font-mono truncate">
-                {exportFilename}
+                {exportFilename}.png / .gif
               </p>
             )}
           </div>
@@ -490,7 +602,7 @@ export default function FridayMixerApp() {
                     Failed to load overlay assets
                   </p>
                   <p className="text-slate-500 text-xs leading-relaxed">
-                    Place the four PNG files in{' '}
+                    Place the PNG files in{' '}
                     <span className="font-mono text-slate-400">
                       public/assets/
                     </span>
