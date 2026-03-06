@@ -10,7 +10,7 @@ const NAV_ITEMS = [
     thumbnail: '/assets/example-friday-mixer.jpg',
   },
   {
-    label: 'Evergreen Generator',
+    label: 'Evergreen Content',
     href: '/evergreen',
     thumbnail: '/assets/example-evergreen.jpg',
   },
@@ -67,7 +67,7 @@ export default function TopBar() {
         <img
           src="/assets/AW-horizontal.svg"
           alt="Artemis Ward"
-          className="h-5 w-auto opacity-90"
+          className="h-7 w-auto opacity-90"
           style={{ filter: 'brightness(0) invert(1)' }}
         />
       </div>

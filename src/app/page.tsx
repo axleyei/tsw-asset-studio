@@ -15,7 +15,7 @@ const GENERATORS = [
   },
   {
     href: '/evergreen',
-    label: 'Evergreen Generator',
+    label: 'Evergreen Content',
     description: 'Thumbnail and IG Story images for The So What',
     thumbnail: '/assets/example-evergreen.jpg',
   },
@@ -32,7 +32,7 @@ export default function LandingPage() {
             className="flex-1 bg-slate-800 border border-slate-700/60 hover:border-slate-500/60 rounded-2xl p-5 flex flex-col gap-4 transition-all group cursor-pointer"
           >
             {/* Example image (FPO gray bg shows until image loads) */}
-            <div className="w-full aspect-video bg-slate-700 rounded-xl overflow-hidden">
+            <div className="w-full aspect-[14/9] bg-slate-700 rounded-xl overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={gen.thumbnail}

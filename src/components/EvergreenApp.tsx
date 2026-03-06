@@ -528,7 +528,7 @@ export default function EvergreenApp() {
         <div className="w-72 shrink-0 flex flex-col gap-4 overflow-y-auto pb-4">
 
           {/* Generator title */}
-          <h1 className="text-base font-bold tracking-tight text-white px-1">Evergreen Generator</h1>
+          <h1 className="text-base font-bold tracking-tight text-white px-1">Evergreen Content</h1>
 
           {/* Issue number */}
           <SectionCard title="Issue #">
@@ -771,7 +771,7 @@ export default function EvergreenApp() {
                 type="text"
                 value={authorName}
                 onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Jane Smith"
+                placeholder="Uncle Arty"
                 className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors text-sm"
               />
             </div>
@@ -782,7 +782,7 @@ export default function EvergreenApp() {
                 type="text"
                 value={authorTitle}
                 onChange={(e) => setAuthorTitle(e.target.value)}
-                placeholder="Senior Correspondent"
+                placeholder="Senior VP of Keeping it Real"
                 className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors text-sm"
               />
             </div>

@@ -53,7 +53,10 @@ export default function FridayMixerApp() {
   // Form state
   const [issueNumber, setIssueNumber] = useState('');
   const [issueError, setIssueError] = useState(false);
-  const [selectedPresetId, setSelectedPresetId] = useState('green-blue');
+  const [selectedPresetId, setSelectedPresetId] = useState(() => {
+    const nonCustom = PRESET_PALETTES.filter((p) => !p.isCustom);
+    return nonCustom[Math.floor(Math.random() * nonCustom.length)].id;
+  });
   const [customTextColorId, setCustomTextColorId] = useState<BaseColorId>('green');
   const [customFrameColorId, setCustomFrameColorId] = useState<BaseColorId>('blue');
 
@@ -566,7 +569,7 @@ export default function FridayMixerApp() {
         </div>
 
         {/* ── Right column: Preview ──────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col gap-3 min-w-0">
+        <div className="flex-1 flex flex-col gap-3 min-w-0 overflow-y-auto pb-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
               Preview
