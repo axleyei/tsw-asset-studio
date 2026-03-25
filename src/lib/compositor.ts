@@ -11,18 +11,22 @@ export const FEATURE_Y = 0;
 export type FrameVariant = 'A' | 'B' | 'C';
 export const ANIMATION_SEQUENCE: FrameVariant[] = ['B', 'A', 'B', 'C'];
 
-// Asset URLs — files must be placed in public/assets/
+// DEPRECATED — This compositor is used only by the legacy /friday-mixer route,
+// which has been superseded by Friday Mixer mode in the main app at /.
+// Assets have been moved to /assets/deprecated/.
+
+// Asset URLs
 const ASSET_PATHS = {
-  frameA:       '/assets/frame_A_neutral.png',
-  frameB:       '/assets/frame_B_neutral.png',
-  frameC:       '/assets/frame_C_neutral.png',
-  textFillA:    '/assets/text_A_fill.png',
-  textFillB:    '/assets/text_B_fill.png',
-  textFillC:    '/assets/text_C_fill.png',
-  textOutlineA: '/assets/text_A_outline.png',
-  textOutlineB: '/assets/text_B_outline.png',
-  textOutlineC: '/assets/text_C_outline.png',
-  logo:         '/assets/so_logo_white.png',
+  frameA:       '/assets/deprecated/frame_A_neutral.png',
+  frameB:       '/assets/deprecated/frame_B_neutral.png',
+  frameC:       '/assets/deprecated/frame_C_neutral.png',
+  textFillA:    '/assets/deprecated/text_A_fill.png',
+  textFillB:    '/assets/deprecated/text_B_fill.png',
+  textFillC:    '/assets/deprecated/text_C_fill.png',
+  textOutlineA: '/assets/deprecated/text_A_outline.png',
+  textOutlineB: '/assets/deprecated/text_B_outline.png',
+  textOutlineC: '/assets/deprecated/text_C_outline.png',
+  logo:         '/assets/deprecated/so_logo_white.png',
 } as const;
 
 type AssetKey = keyof typeof ASSET_PATHS;

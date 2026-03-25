@@ -1,3 +1,6 @@
+// DEPRECATED — The Friday Mixer tool has been superseded by the Friday Mixer
+// mode inside the main app at /. This route is kept for reference only and
+// is not actively maintained.
 import type { Metadata } from 'next';
 import FridayMixerApp from '@/components/FridayMixerApp';
 

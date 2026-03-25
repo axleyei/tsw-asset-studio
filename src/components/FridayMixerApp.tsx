@@ -1,3 +1,7 @@
+// DEPRECATED — The standalone Friday Mixer tool has been superseded by
+// Friday Mixer mode inside the main app at /. This component is kept for
+// reference only and is not actively maintained.
+
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -107,7 +111,7 @@ export default function FridayMixerApp() {
   // ─── FPO placeholder image ────────────────────────────────────────────────
 
   useEffect(() => {
-    loadImage('/assets/test_pattern_sq.png')
+    loadImage('/assets/deprecated/test_pattern_sq.png')
       .then((img) => setFpoImage(img))
       .catch(() => {}); // silent — canvas just renders without a background image
   }, []);

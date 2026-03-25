@@ -1,11 +1,6 @@
-import type { Metadata } from 'next';
-import EvergreenApp from '@/components/EvergreenApp';
+// The Evergreen generator now lives at /. Redirecting there.
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Evergreen Generator — TSW Asset Studio',
-  description: 'Generate Thumbnail and IG Story images for The So What',
-};
-
-export default function EvergreenPage() {
-  return <EvergreenApp />;
+export default function EvergreenRedirect() {
+  redirect('/');
 }
